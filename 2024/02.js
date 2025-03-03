@@ -23,8 +23,9 @@ const input = fs.readFileSync(inputFile, "utf-8")
  *              - e.g, 9, 7, 8, 4, 3 => detects failure when at 7, 8 but if you remove 'nextLevel', would then fail due to diff between 8, 4 so must remove 'prevLevel'
  *              - e.g, 3, 1, 2, 3, 4 => detects failure when at 1, 2 but only passes if you remove 3, which is 'prevprev?' when at failure detection
  *          - when failure detected ('prev', 'next') then lookahead (edit - lookahead got too confusing, easier to just run it again without one of the elements and see if they now pass)
- *      -
- *    - time taken: so far 20min on test cases, 30min refactor to .every and problem solving, 15min for loop, 20min for the case where 'prevprev' actually needs to be removed
+ *      - just ended up doing a 'bruteforce' method, each report gets run as up to N subreports (with one element removed) against isSafe (from part 1) - we just exit early if we get a single pass case
+ *      - i think the lookahead method was getting too unnecessarily complicated - especially for sample data only of this size
+ *    - time taken: so far 20min on test cases, 30min refactor to .every and problem solving, 15min for loop, 20min for the case where 'prevprev' actually needs to be removed, 30min for final solution
  */
 
 const reports = parseReports(input.trim())
@@ -34,7 +35,7 @@ console.log(reports.filter(isSafe).length)
 console.log("============================")
 
 console.log("#safe reports with tolerance")
-console.log(reports.filter(isSafeWithTolerance, 0).length)
+console.log(reports.filter(bruteForceSafetyWithTolerance, 0).length)
 console.log("============================")
 
 // parses string input and returns a list of reports (list of numbers)
@@ -150,6 +151,16 @@ function isSafeWithTolerance(report, failures) {
     return true
 }
 
+function bruteForceSafetyWithTolerance(report) {
+    // if a single one of the subreports passes then the report is valid
+
+    const isAllFailing = report.every((level, idx, array) => {
+        const subReport = array.slice(0, idx).concat(array.slice(idx + 1))
+        return !isSafe(subReport) // every exits prematurely on false, so we just flip it (i.e, a false = a successful subReport)
+    })
+    return !isAllFailing
+}
+
 // Part two test cases
 const partTwoTestCases = [
     { report: [7, 6, 4, 2, 1], expected: true }, // safe without removing
@@ -165,7 +176,7 @@ const partTwoTestCases = [
 ]
 
 partTwoTestCases.forEach(({ report, expected }, index) => {
-    const result = isSafeWithTolerance(report, 0)
+    const result = bruteForceSafetyWithTolerance(report)
     console.assert(
         result === expected,
         `Test case ${index + 1} failed: Input ${JSON.stringify(report)}. Expected ${expected}, got ${result}`
