@@ -12,13 +12,14 @@ const input = fs.readFileSync(inputFile, "utf-8")
  *      - 1hr 45min, wasted some time mistakenly doing a version which can snake / change directions during a search and also getting confused between naming things x, y vs row, col (it's 'swapped' for a traditional grid)
  *      - I think splitting it into scanGrid which calls checkSurrounding before calling the recursive function made things a little more confusing for me
  *  - Part two
- *      -
+ *      - 50min, I tried to reuse part one code, but it went in a direction where it didn't quite make sense to do the recursive search
  */
 
 console.log("=== pt1 Puzzle search ===")
-console.log(scanGrid(puzzleInputToGrid(input.trim())))
+console.log(scanGrid("XMAS", puzzleInputToGrid(input.trim())))
 console.log("=========================")
-console.log("=== pt2 ????????????? ===")
+console.log("== pt2 X-'MAS' search ===")
+console.log(scanGridForX(puzzleInputToGrid(input.trim())))
 console.log("========================")
 
 function puzzleInputToGrid(input) {
@@ -29,19 +30,18 @@ function puzzleInputToGrid(input) {
 }
 
 /**
- * Looks for XMAS in a straight line but can be in any direction and overlap other lines
+ * Looks for scanFor search string in a straight line but can be in any direction and overlap other lines
  * @param {*} grid - array of strings, assumed to be a uniform rectangle (all lines have same length)
- * @returns number of 'XMAS' sequences found
+ * @returns number of scanFor string sequences found
  */
-function scanGrid(grid) {
-    const SCAN_FOR = "XMAS"
+function scanGrid(scanFor, grid) {
     let totalFound = 0
 
     grid.forEach((line, rowIdx) => {
         line.split("").forEach((char, colIdx) => {
-            if (char === SCAN_FOR[0]) {
+            if (char === scanFor[0]) {
                 // check all directions
-                totalFound += checkSurrounding(SCAN_FOR, rowIdx, colIdx, grid)
+                totalFound += checkSurrounding(scanFor, rowIdx, colIdx, grid)
             }
         })
     })
@@ -107,7 +107,94 @@ function checkDirection(target, rowIdx, colIdx, rowDir, colDir, grid) {
     }
 }
 
-// Part one test cases
+/**
+ * Looks for "MAS" in an X pattern from given grid, string can be 'forwards' (MAS) or 'backwards' (SAM) and can cross over other X patterns
+ * @param {*} grid - array of strings, assumed to be a uniform rectangle (all lines have same length)
+ * @returns number of MAS in X patterns found
+ */
+function scanGridForX(grid) {
+    let totalFound = 0
+
+    grid.forEach((line, rowIdx) => {
+        line.split("").forEach((char, colIdx) => {
+            // if we find the center 'A' we check the diagonals
+            if (char === "A" && checkX(rowIdx, colIdx, grid)) {
+                totalFound += 1
+            }
+        })
+    })
+    return totalFound
+}
+
+function checkX(rowIdx, colIdx, grid) {
+    /*  Scanning in all diagonals means we want
+     *  rowIdx => y direction, colIdx => x direction
+     *  a - b
+     *  - o -
+     *  b - a
+     * a (rowIdx-1, colIdx-1 && rowIdx+1, colIdx+1) needs to be a matching pair ('M' and 'X')
+     * b (rowIdx-1, colIdx+1 && rowIdx+1, colIdx-1) needs to be a matching pair ('M' and 'X')
+     */
+
+    // check bounds
+    if (isXOutOfBounds(rowIdx, colIdx, grid)) {
+        return 0
+    }
+
+    // check backslash '\'
+    const topLeft = grid[rowIdx - 1][colIdx - 1] || ""
+    const botRight = grid[rowIdx + 1][colIdx + 1] || ""
+    const backSlashSearch = ["M", "S"].every((val) => {
+        return val == topLeft || val == botRight
+    })
+    // check forward slash '/'
+    const topRight = grid[rowIdx - 1][colIdx + 1] || ""
+    const botLeft = grid[rowIdx + 1][colIdx - 1] || ""
+    const fowardSlashSearch = ["M", "S"].every((val) => {
+        return val == topRight || val == botLeft
+    })
+
+    return backSlashSearch && fowardSlashSearch
+}
+
+function isXOutOfBounds(rowIdx, colIdx, grid) {
+    // check if four corners would be out of bounds
+    const boundRows = grid.length - 1
+    const boundCols = grid[0].length - 1
+
+    return rowIdx < 1 || rowIdx >= boundRows || colIdx < 1 || colIdx >= boundCols
+}
+
+// // Part one test cases
+// const testCases = [
+//     {
+//         input: `
+//             MMMSXXMASM
+//             MSAMXMSMSA
+//             AMXSXMAAMM
+//             MSAMASMSMX
+//             XMASAMXAMM
+//             XXAMMXXAMA
+//             SMSMSASXSS
+//             SAXAMASAAA
+//             MAMMMXMMMM
+//             MXMXAXMASX`,
+//         expected: 18,
+//     },
+// ]
+
+// testCases.forEach(({ input, expected }, index) => {
+//     const test = puzzleInputToGrid(input.trim())
+//     const result = scanGrid("XMAS", test)
+
+//     console.assert(
+//         result === expected,
+//         `Test case ${index + 1} failed: Input ${JSON.stringify(input)}. Expected ${expected}, got ${result}`
+//     )
+//     console.log(`Test case ${index + 1}:`, result === expected ? "Passed" : "Failed")
+// })
+
+// Part two test cases
 const testCases = [
     {
         input: `
@@ -121,13 +208,45 @@ const testCases = [
             SAXAMASAAA
             MAMMMXMMMM
             MXMXAXMASX`,
-        expected: 18,
+        expected: 9,
+    },
+    {
+        input: `
+            XXMXX
+            XMASX
+            XXSXX
+        `,
+        expected: 0,
+    },
+    {
+        input: `
+            MAS
+            ASM
+            SMA
+        `,
+        expected: 0,
+    },
+    {
+        input: `
+            MXM
+            XAX
+            SXS
+        `,
+        expected: 1,
+    },
+    {
+        input: `
+            MXS
+            XAX
+            MXS
+        `,
+        expected: 1,
     },
 ]
 
 testCases.forEach(({ input, expected }, index) => {
     const test = puzzleInputToGrid(input.trim())
-    const result = scanGrid(test)
+    const result = scanGridForX(test)
 
     console.assert(
         result === expected,
