@@ -25,7 +25,6 @@ const input = fs.readFileSync(inputFile, "utf-8")
  */
 
 const GUARD_CHARS = ["^", ">", "v", "<"]
-const TRAVELED = "X"
 const OBSTACLE = "#"
 const NEW_OBSTACLE = "!"
 const OUT_OF_BOUNDS = "OOB"
@@ -36,21 +35,6 @@ console.log("===========================")
 console.log("=== pt2 ===")
 console.log(partTwo(input.trim()))
 console.log("========================")
-
-function sumDistinctPositions(input) {
-    // create map
-    const map = toMap(input)
-
-    // simulate guard walking
-    do {
-        nextStep(map)
-    } while (countObjInMap(map, GUARD_CHARS))
-
-    //printMap(map)
-
-    // check map for X
-    return countObjInMap(map, [TRAVELED])
-}
 
 function partOneRewrite(input) {
     // direction: 0 = ^, 1 = >, 2 = v, 3 = <
@@ -100,48 +84,11 @@ function printMap(map) {
     })
 }
 
-function nextStep(map) {
-    map.forEach((row, rowIdx) => {
-        row.forEach((obj, colIdx) => {
-            if (isGuard(obj)) {
-                // determine facing
-                const [frontRow, frontCol] = getGuardDirection(obj, rowIdx, colIdx)
-                const frontObj = checkSpace(map, frontRow, frontCol)
-                if (frontObj === OBSTACLE) {
-                    // if obstacle in front, turn right
-                    map[rowIdx][colIdx] = turnRight(obj)
-                } else {
-                    // only need to set next position if guard won't 'leave' the map
-                    if (frontObj !== OUT_OF_BOUNDS) {
-                        map[frontRow][frontCol] = obj
-                    }
-                    map[rowIdx][colIdx] = TRAVELED
-                }
-            }
-        })
-    })
-}
-
 function toMap(input) {
     return input.split("\n").map((row) => {
         // convert to array
         return [...row]
     })
-}
-
-function turnRight(char) {
-    switch (char) {
-        case "^":
-            return ">"
-        case ">":
-            return "v"
-        case "<":
-            return "^"
-        case "v":
-            return "<"
-        default:
-            return undefined
-    }
 }
 
 function checkSpace(map, frontRow, frontCol) {
@@ -154,33 +101,6 @@ function checkSpace(map, frontRow, frontCol) {
     } else {
         return map[frontRow][frontCol]
     }
-}
-
-function isGuard(char) {
-    return GUARD_CHARS.includes(char)
-}
-
-function getGuardDirection(obj, rowIdx, colIdx) {
-    switch (obj) {
-        case "^":
-            return [rowIdx - 1, colIdx]
-        case ">":
-            return [rowIdx, colIdx + 1]
-        case "<":
-            return [rowIdx, colIdx - 1]
-        case "v":
-            return [rowIdx + 1, colIdx]
-        default:
-            return undefined
-    }
-}
-
-function countObjInMap(map, chars) {
-    return map
-        .map((row) => {
-            return row.filter((val) => chars.includes(val)).length
-        })
-        .reduce((prev, curr) => prev + curr)
 }
 
 function partTwo(input, testIdx) {
@@ -208,9 +128,6 @@ function traverseMap(testIdx, map, start, obstacle) {
 
     do {
         if (visited.has(`${row}, ${col}, ${dir}`)) {
-            // if (testIdx === 10) {
-            //     printMap(map)
-            // }
             loopCausingObstacles.add(`${obstacle.row}, ${obstacle.col}`)
             return loopCausingObstacles
         }
