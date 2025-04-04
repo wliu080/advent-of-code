@@ -1,0 +1,70 @@
+[
+    {
+        "description": "Simple 1 path test",
+        "expected": 1,
+        "startPoint": {
+            "row": 0,
+            "col": 0
+        },
+        "trails": [],
+        "map": [
+            [0, 1, 2, 3],
+            [3, 2, 6, 4],
+            [8, 7, 9, 5],
+            [9, 8, 7, 6]
+        ]
+    },
+    {
+        "description": "Single trailend, multi path test (from challenge)",
+        "expected": 3,
+        "startPoint": {
+            "row": 0,
+            "col": 3
+        },
+        "trails": [],
+        "map": [
+            [1, 1, 8, 0],
+            [4, 3, 2, 1],
+            [5, 1, 1, 2],
+            [6, 5, 4, 3],
+            [7, 1, 1, 4],
+            [8, 7, 6, 5],
+            [9, 1, 1, 1]
+        ]
+    },
+    {
+        "description": "Multi trailend, multi path test (from challenge)",
+        "expected": 13,
+        "startPoint": {
+            "row": 0,
+            "col": 3
+        },
+        "trails": [],
+        "map": [
+            [1, 1, 9, 0, 8, 1, 9],
+            [1, 1, 1, 1, 1, 9, 8],
+            [1, 1, 1, 2, 1, 1, 7],
+            [6, 5, 4, 3, 4, 5, 6],
+            [7, 6, 5, 1, 9, 8, 7],
+            [8, 7, 6, 1, 1, 1, 1],
+            [9, 8, 7, 1, 1, 1, 1]
+        ]
+    },
+    {
+        "description": "High rating test",
+        "expected": 227,
+        "startPoint": {
+            "row": 0,
+            "col": 0
+        },
+        "trails": [],
+        "map": [
+            [0, 1, 2, 3, 4, 5],
+            [1, 2, 3, 4, 5, 6],
+            [2, 3, 4, 5, 6, 7],
+            [3, 4, 5, 6, 7, 8],
+            [4, 1, 6, 7, 8, 9],
+            [5, 6, 7, 8, 9, 1]
+        ]
+    }
+]
